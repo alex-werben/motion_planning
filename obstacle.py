@@ -7,7 +7,8 @@ class Obstacle(ABC):
     def __init__(self, points: List[Point]) -> None:
         self.__points: List[Point] = points
         self.__x_borders, self.__y_borders = self.__compute_borders()
-
+        for p in self.__points:
+            p.owner = self
 
     def point_crosses_obstacle_horizontally(self, p: Point) -> bool:
         """
@@ -93,3 +94,12 @@ class Polypoint(Obstacle):
     @property
     def size(self) -> float:
         return self.__size
+
+
+p1 = Point(1, 1)
+p2 = Point(2, 2)
+pp1 = Polypoint(p1)
+pp2 = Polypoint(p2)
+
+print(p1.owner == pp1)
+print(p1.owner == pp2)
