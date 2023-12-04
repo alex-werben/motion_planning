@@ -1,25 +1,51 @@
-from typing import List
-from obstacle import Obstacle
+import json
+from typing import List, Optional
+from obstacle import Obstacle, Polypoint, Polygon, Polyline
 from figure import Figure, Line, Trapezoid
 from point import Point
 
 
 class ConfigurationSpace():
     def __init__(self):
-        self.__obst: List[Obstacle] = None
-        self.__lines = List[Figure] = None
-        self.__trapezoids = List[Figure] = None
-        self.__configuration_points: List[List[Point]] = None
+        self.__obst: Optional[List[Obstacle]] = None
+        self.__lines: Optional[List[Line]] = None
+        self.__trapezoids: Optional[List[Trapezoid]] = None
+        self.__configuration_points: Optional[List[List[Point]]] = None
+        self.__start_end_points: Optional[List[Point]] = None
 
     # TODO
-    def parse_JSON(self, path: str) -> None:
+    def parse_json(self, path: str) -> None:
         """
         Parses JSON file with obstacles and fills self.__obst.
 
         :param path:
         :return:
         """
-        pass
+        with open(path, 'r') as fp:
+            array: List[dict] = json.load(fp)
+            fp.close()
+        for prim in array:
+            if prim["type"] == "point":
+                obj = Polypoint(Point(prim['x'], prim['y']), prim["size"])
+                self.__obst.append(obj)
+            elif prim["type"] == "polyline":
+                points: List[Point] = []
+                for p in prim["points"]:
+                    points.append(Point(p['x'], p['y']))
+                obj = Polyline(points, prim["size"])
+                self.__obst.append(obj)
+            elif prim["type"] == "polygon":
+                points: List[Point] = []
+                for p in prim["points"]:
+                    points.append(Point(p['x'], p['y']))
+                obj = Polygon(points)
+                self.__obst.append(obj)
+            elif prim["type"] == "startPoint":
+                # TODO
+                pass
+            elif prim["type"] == "endPoint":
+                # TODO
+                pass
 
     def prepare_points(self) -> None:
         """
@@ -28,7 +54,17 @@ class ConfigurationSpace():
 
         :return:
         """
-        pass
+
+        points: List[Point] = []
+        for obst in self.obst:
+            for p in obst.points:
+                points.append(p)
+
+        for p in points:
+            for obst in self.obst:
+                if obst.point_crosses_obstacle_horizontally(p):
+
+
 
     def sort_points(self) -> None:
         """
@@ -85,9 +121,16 @@ class ConfigurationSpace():
         """
 
     @property
+    def obst(self) -> List[Obstacle]:
+        return self.__obst
+
+    @property
     def lines(self) -> List[Line]:
         return self.__lines
 
     @property
     def trapezoids(self) -> List[Trapezoid]:
         return self.__trapezoids
+
+cs = ConfigurationSpace()
+cs.parse_json("data/sample_random_primitives.json")

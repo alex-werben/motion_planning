@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Self
+from typing import List, Self, Optional
 from point import Point
 
 
 class Figure(ABC):
     def __init__(self) -> None:
         self.__distance: float = -1.0
-        self.__center: Point = None
-        self.__parent: Figure = None
+        self.__center: Optional[Point] = None
+        self.__parent: Optional[Figure] = None
 
     @property
     def distance(self) -> float:
@@ -43,8 +43,8 @@ class Figure(ABC):
 class Line(Figure):
     def __init__(self, p1: Point, p2: Point) -> None:
         super().__init__()
-        self.__left: Trapezoid = None
-        self.__right: Trapezoid = None
+        self.__left: Optional[Trapezoid] = None
+        self.__right: Optional[Trapezoid] = None
         self.__points: List[Point] = [p1, p2]
         self.__compute_center()
 
