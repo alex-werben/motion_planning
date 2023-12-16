@@ -1,22 +1,19 @@
 import json
+from operator import itemgetter
 from typing import List, Optional
-# from obstacle import Obstacle, Polypoint, Polygon, Polyline
 from figure import Figure, Line, Trapezoid
 from point import Point
 from shapely import Polygon, Point, LineString, get_coordinates, GeometryCollection
 import matplotlib.pyplot as plt
-import geopandas as gpd
 
 
-class ConfigurationSpace():
+class ConfigurationSpace:
     def __init__(self):
-        self.__obst: List[Polygon] = None
-        self.__lines = None
-        self.__trapezoids = None
-        self.__configuration_points = None
-        self.__start_end_points = None
+        self.__obst = []
         self.__x_limit = [0.0, 100.0]
-        self.__y_limit = [0.0, 100.0]
+        self.__y_limit = [0.0, 20.0]
+        self.__lines = []
+        self.__points = []
 
     # TODO
     def parse_json(self, path: str) -> None:
@@ -33,19 +30,20 @@ class ConfigurationSpace():
             if prim["type"] == "point":
                 obj = Point(prim['x'], prim['y'])
                 # obj = Polypoint(Point(prim['x'], prim['y']), prim["size"])
-                self.__obst.append(obj)
-            elif prim["type"] == "polyline":
-                points: List[Point] = []
-                for p in prim["points"]:
-                    points.append(Point(p['x'], p['y']))
-                obj = LineString(points)
-                self.__obst.append(obj)
+                self.__points.append(obj)
+            # elif prim["type"] == "polyline":
+            #     points: List[Point] = []
+            #     for p in prim["points"]:
+            #         points.append(Point(p['x'], p['y']))
+            #     obj = LineString(points)
+            #     self.__obst.append(obj)
             elif prim["type"] == "polygon":
-                points: List[Point] = []
+                obst_points = []
                 for p in prim["points"]:
-                    points.append(Point(p['x'], p['y']))
-                points.append(Point(prim["points"][0]['x'], prim["points"][0]['y']))
-                obj = Polygon(points)
+                    point = [p['x'], p['y']]
+                    self.__points.append(point)
+                    obst_points.append(point)
+                obj = Polygon(obst_points)
                 self.__obst.append(obj)
             elif prim["type"] == "startPoint":
                 # TODO
@@ -53,50 +51,89 @@ class ConfigurationSpace():
             elif prim["type"] == "endPoint":
                 # TODO
                 pass
-        self.gc = GeometryCollection(self.obst)
-        self.gc
+        self.__points = sorted(self.__points, key=itemgetter(0))
+
+    def __compare_intersection_points(self, y, closest_bottom_point, closest_upper_point, y_coord):
+        if y < y_coord <= closest_upper_point:
+            closest_upper_point = y_coord
+        elif y > y_coord >= closest_bottom_point:
+            closest_bottom_point = y_coord
+        return closest_bottom_point, closest_upper_point
 
     def prepare_points(self) -> None:
+        for obst in self.obst:
+            obst_points = get_coordinates(obst)
+            for i, p in enumerate(obst_points):
+                if i == len(obst_points) - 1:
+                    break
+                self.__points.append(p)
+        self.__points = sorted(self.__points, key=itemgetter(0))
+
+    def prepare_lines(self) -> None:
         """
         Prepares points of configuration space to create Figures and Graph later.
         Points are saved in self.__configuration_points.
 
         :return:
         """
-
-        points = []
-        for obst in self.obst:
-            obst_points = get_coordinates(p)
-            for i, p in enumerate(obst_points):
-                if i == len(obst_points) - 1:
-                    break
-                points.append(p)
-
-        for p in points:
-            closest_upper_point = self.__y_limit[1] + 10e-14
-            closest_bottom_point = self.__y_limit[0] - 10e-14
+        for p in self.points:
+            closest_upper_point = self.__y_limit[1]
+            closest_bottom_point = self.__y_limit[0]
             x, y = p
-            vertical = LineString([[x, 0], [x, 100]])
+            vertical = LineString([[x, self.__y_limit[0]], [x, self.__y_limit[1]]])
 
             for obst in self.obst:
                 x_min, y_min, x_max, y_max = obst.bounds
                 # Значит будет пересекать объект
                 if x_min <= x <= x_max:
-                    for y_moving in range(y, closest_upper_point, 10e-4):
-                        if
+                    intersection = obst.intersection(vertical)
+                    if intersection.geom_type == "MultiLineString":
+                        lines = intersection.geoms
+                        for l in lines:
+                            y_intersections = l.coords.xy[1]
+                            for y_coord in y_intersections:
+                                (closest_bottom_point,
+                                 closest_upper_point) = self.__compare_intersection_points(y,
+                                                                                           closest_bottom_point,
+                                                                                           closest_upper_point,
+                                                                                           y_coord)
+                    if intersection.geom_type == "LineString":
+                        y_intersections = intersection.coords.xy[1]
+                        for y_coord in y_intersections:
+                            (closest_bottom_point,
+                             closest_upper_point) = self.__compare_intersection_points(y,
+                                                                                       closest_bottom_point,
+                                                                                       closest_upper_point,
+                                                                                       y_coord)
+                    if intersection.geom_type == "Point":
+                        y_coord = intersection.y
+                        (closest_bottom_point,
+                         closest_upper_point) = self.__compare_intersection_points(y,
+                                                                                   closest_bottom_point,
+                                                                                   closest_upper_point,
+                                                                                   y_coord)
+                    if intersection.geom_type == "MultiPoint":
+                        i_points = intersection.geoms
+                        for i_p in i_points:
+                            y_coord = i_p.y
+                            (closest_bottom_point,
+                             closest_upper_point) = self.__compare_intersection_points(y,
+                                                                                       closest_bottom_point,
+                                                                                       closest_upper_point,
+                                                                                       y_coord)
+            new_lines = []
+            if closest_upper_point == y:
+                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
+            elif closest_bottom_point == y:
+                new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
+            else:
+                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
+                new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
+            for l in new_lines:
+                self.__lines.append(l)
 
 
 
-
-
-
-    def sort_points(self) -> None:
-        """
-        Sorts all points in self.__configuration_points by x coordinate.
-
-        :return:
-        """
-        pass
 
     def divide_space_into_trapezoids(self) -> None:
         """
@@ -145,19 +182,21 @@ class ConfigurationSpace():
         """
 
     @property
-    def obst(self) -> List[Obstacle]:
+    def obst(self):
         return self.__obst
 
     @property
-    def lines(self) -> List[Line]:
+    def points(self):
+        return self.__points
+
+    @property
+    def lines(self):
         return self.__lines
 
     @property
     def trapezoids(self) -> List[Trapezoid]:
         return self.__trapezoids
 
-cs = ConfigurationSpace()
-cs.parse_json("data/sample_random_primitives.json")
-
-print(Polygon(([0, 1], [1, 0], [1, 1], [0, 0], [0, 1])).exterior.coords.xy[0])
-plt.plot()
+    @points.setter
+    def points(self, value):
+        self.__points = value

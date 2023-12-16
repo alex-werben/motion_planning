@@ -1,0 +1,49 @@
+[
+    {
+        "countVertex": 3,
+        "density": 0,
+        "seed": 3892905764,
+        "size": 3,
+        "type": "info"
+    },
+    {
+        "points": [
+            {
+                "type": "point",
+                "x": 2,
+                "y": 3
+            },
+            {
+                "type": "point",
+                "x": 5,
+                "y": 6
+            },
+            {
+                "type": "point",
+                "x": 9,
+                "y": 1
+            }
+        ],
+        "type": "polygon"
+    },
+    {
+        "points": [
+            {
+                "type": "point",
+                "x": 3.5,
+                "y": 10
+            },
+            {
+                "type": "point",
+                "x": 7,
+                "y": 14
+            },
+            {
+                "type": "point",
+                "x": 13,
+                "y": 11.5
+            }
+        ],
+        "type": "polygon"
+    }
+]
