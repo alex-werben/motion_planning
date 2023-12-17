@@ -53,10 +53,16 @@ class ConfigurationSpace:
                 pass
         self.__points = sorted(self.__points, key=itemgetter(0))
 
-    def __compare_intersection_points(self, y, closest_bottom_point, closest_upper_point, y_coord):
+    def __compare_intersection_points(self,
+                                      y,
+                                      closest_bottom_point,
+                                      closest_upper_point,
+                                      y_coord,
+                                      change_upper=True,
+                                      change_lower=True):
         if y < y_coord <= closest_upper_point:
             closest_upper_point = y_coord
-        elif y > y_coord >= closest_bottom_point:
+        elif y > y_coord >= closest_bottom_point and change_lower:
             closest_bottom_point = y_coord
         return closest_bottom_point, closest_upper_point
 
@@ -79,6 +85,7 @@ class ConfigurationSpace:
         for p in self.points:
             closest_upper_point = self.__y_limit[1]
             closest_bottom_point = self.__y_limit[0]
+            change_lower, change_upper = True, True
             x, y = p
             vertical = LineString([[x, self.__y_limit[0]], [x, self.__y_limit[1]]])
 
@@ -87,8 +94,10 @@ class ConfigurationSpace:
                 # Значит будет пересекать объект
                 if x_min <= x <= x_max:
                     intersection = obst.intersection(vertical)
+                    # print(intersection)
                     if intersection.geom_type == "MultiLineString":
                         lines = intersection.geoms
+                        print("multiline")
                         for l in lines:
                             y_intersections = l.coords.xy[1]
 
@@ -114,10 +123,9 @@ class ConfigurationSpace:
                                                                                            y_coord)
                     if intersection.geom_type == "LineString":
                         y_intersections = intersection.coords.xy[1]
-
+                        x_intersections = intersection.coords.xy[0]
                         for i, y_coord in enumerate(y_intersections):
                             if y_coord == y:
-                                print(y_intersections, y_coord)
                                 if i == 0:
                                     if y_intersections[1] < y_coord:
                                         closest_bottom_point = y_coord
@@ -125,16 +133,22 @@ class ConfigurationSpace:
                                         closest_upper_point = y_coord
                                 else:
                                     if y_intersections[0] < y_coord:
-                                        print("here")
+                                        # print("here")
                                         closest_bottom_point = y_coord
+                                        change_lower = False
                                     else:
                                         closest_upper_point = y_coord
-                                continue
+
+
                             (closest_bottom_point,
                              closest_upper_point) = self.__compare_intersection_points(y,
                                                                                        closest_bottom_point,
                                                                                        closest_upper_point,
-                                                                                       y_coord)
+                                                                                       y_coord,
+                                                                                       change_upper,
+                                                                                       change_lower)
+                            if y == 6:
+                                print(y, closest_bottom_point, closest_upper_point, y_coord)
                     if intersection.geom_type == "Point":
                         y_coord = intersection.y
                         (closest_bottom_point,
@@ -153,9 +167,9 @@ class ConfigurationSpace:
                                                                                        y_coord)
             new_lines = []
             if closest_upper_point == y:
-                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
-            elif closest_bottom_point == y:
                 new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
+            elif closest_bottom_point == y:
+                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
             else:
                 new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
                 new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
