@@ -1,6 +1,9 @@
 import json
 from operator import itemgetter
 from typing import List, Optional
+
+from tqdm import tqdm
+
 from figure import Figure, Line, Trapezoid
 from point import Point
 from shapely import Polygon, Point, LineString, get_coordinates, GeometryCollection
@@ -9,13 +12,16 @@ import matplotlib.pyplot as plt
 
 class ConfigurationSpace:
     def __init__(self):
+        self.end_point = None
+        self.start_point = None
         self.__obst = []
         self.__x_limit = [0.0, 100.0]
         self.__y_limit = [0.0, 20.0]
         self.__lines = []
         self.__points = []
+        self.__edges = []
+        self.__graph_points = []
 
-    # TODO
     def parse_json(self, path: str) -> None:
         """
         Parses JSON file with obstacles and fills self.__obst.
@@ -46,23 +52,22 @@ class ConfigurationSpace:
                 obj = Polygon(obst_points)
                 self.__obst.append(obj)
             elif prim["type"] == "startPoint":
-                # TODO
-                pass
+                p = Point(prim['x'], prim['y'])
+                self.start_point = p
+                self.graph_points.append(p)
             elif prim["type"] == "endPoint":
-                # TODO
-                pass
+                p = Point(prim['x'], prim['y'])
+                self.end_point = p
         self.__points = sorted(self.__points, key=itemgetter(0))
 
     def __compare_intersection_points(self,
                                       y,
                                       closest_bottom_point,
                                       closest_upper_point,
-                                      y_coord,
-                                      change_upper=True,
-                                      change_lower=True):
+                                      y_coord):
         if y < y_coord <= closest_upper_point:
             closest_upper_point = y_coord
-        elif y > y_coord >= closest_bottom_point and change_lower:
+        elif y > y_coord >= closest_bottom_point:
             closest_bottom_point = y_coord
         return closest_bottom_point, closest_upper_point
 
@@ -94,7 +99,6 @@ class ConfigurationSpace:
                 # Значит будет пересекать объект
                 if x_min <= x <= x_max:
                     intersection = obst.intersection(vertical)
-                    # print(intersection)
                     if intersection.geom_type == "MultiLineString":
                         lines = intersection.geoms
                         print("multiline")
@@ -123,7 +127,6 @@ class ConfigurationSpace:
                                                                                            y_coord)
                     if intersection.geom_type == "LineString":
                         y_intersections = intersection.coords.xy[1]
-                        x_intersections = intersection.coords.xy[0]
                         for i, y_coord in enumerate(y_intersections):
                             if y_coord == y:
                                 if i == 0:
@@ -133,9 +136,7 @@ class ConfigurationSpace:
                                         closest_upper_point = y_coord
                                 else:
                                     if y_intersections[0] < y_coord:
-                                        # print("here")
                                         closest_bottom_point = y_coord
-                                        change_lower = False
                                     else:
                                         closest_upper_point = y_coord
 
@@ -144,11 +145,7 @@ class ConfigurationSpace:
                              closest_upper_point) = self.__compare_intersection_points(y,
                                                                                        closest_bottom_point,
                                                                                        closest_upper_point,
-                                                                                       y_coord,
-                                                                                       change_upper,
-                                                                                       change_lower)
-                            if y == 6:
-                                print(y, closest_bottom_point, closest_upper_point, y_coord)
+                                                                                       y_coord)
                     if intersection.geom_type == "Point":
                         y_coord = intersection.y
                         (closest_bottom_point,
@@ -171,10 +168,13 @@ class ConfigurationSpace:
             elif closest_bottom_point == y:
                 new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
             else:
-                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
                 new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
+                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
             for l in new_lines:
                 self.__lines.append(l)
+        for l in self.__lines:
+            self.__graph_points.append(l.centroid)
+        self.__graph_points.append(self.end_point)
 
     def divide_space_into_trapezoids(self) -> None:
         """
@@ -184,7 +184,32 @@ class ConfigurationSpace:
 
         :return:
         """
-        pass
+        for i in range(len(self.graph_points)):
+            centroid_i = self.graph_points[i]
+            j = i + 1
+            neighbor_x_coord = None
+            while j < len(self.graph_points):
+                centroid_j = self.graph_points[j]
+                if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
+                    break
+                if centroid_i.x == centroid_j.x:
+                    j += 1
+                    continue
+                line = LineString([centroid_i, centroid_j])
+                if centroid_i.x == 13:
+                    print(line)
+                intersects = False
+                for obst in self.__obst:
+                    if line.intersects(obst):
+                        intersects = True
+                        break
+                if not intersects:
+                    distance = centroid_i.distance(centroid_j)
+                    self.__edges.append([i, j, distance])
+                    # self.__edges.append([j, i, distance])
+                    neighbor_x_coord = centroid_j.x
+                j += 1
+                continue
 
     def create_line_with_points(self, points: List[Point]) -> List[Line]:
         """
@@ -214,13 +239,16 @@ class ConfigurationSpace:
         """
         self.__lines.append(line)
 
-    def add_trapezoid_to_lis(self, trapezoid: Trapezoid) -> None:
-        """
-        Method adds trapezoid to list of trapezoids.
+    def dijkstra(self):
+        
 
-        :param trapezoid:
-        :return:
-        """
+    @property
+    def graph_points(self):
+        return self.__graph_points
+
+    @property
+    def edges(self):
+        return self.__edges
 
     @property
     def obst(self):

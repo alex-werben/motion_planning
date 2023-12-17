@@ -1,7 +1,7 @@
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, from_to):
         pass
 
     def dijkstra(self):
