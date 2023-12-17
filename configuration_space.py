@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 
 
 class ConfigurationSpace:
-    def __init__(self):
+    def __init__(self, min_limit, max_limit):
         self.end_point = None
         self.start_point = None
         self.__obst = []
-        self.__x_limit = [0.0, 100.0]
-        self.__y_limit = [0.0, 20.0]
+        self.__x_limit = [min_limit, max_limit]
+        self.__y_limit = [min_limit, max_limit]
         self.__lines = []
         self.__points = []
         self.__edges = []
@@ -70,15 +70,6 @@ class ConfigurationSpace:
         elif y > y_coord >= closest_bottom_point:
             closest_bottom_point = y_coord
         return closest_bottom_point, closest_upper_point
-
-    def prepare_points(self) -> None:
-        for obst in self.obst:
-            obst_points = get_coordinates(obst)
-            for i, p in enumerate(obst_points):
-                if i == len(obst_points) - 1:
-                    break
-                self.__points.append(p)
-        self.__points = sorted(self.__points, key=itemgetter(0))
 
     def prepare_lines(self) -> None:
         """

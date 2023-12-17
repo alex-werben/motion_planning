@@ -1,7 +1,6 @@
-
-
 class Graph:
     def __init__(self, from_to, coords, start, end):
+        self.route = None
         self.graph = None
         self.previous_nodes = None
         self.shortest_path = None
@@ -20,7 +19,6 @@ class Graph:
                 self.graph[j] = {}
             self.graph[i][j] = weight
             self.graph[j][i] = weight
-
 
     def dijkstra(self):
         shortest_path = {}
@@ -49,16 +47,19 @@ class Graph:
 
             unvisited.remove(current_min_node)
         self.previous_nodes = previous_nodes
-        print(self.previous_nodes)
         self.shortest_path = shortest_path
-        # return previous_nodes, shortest_path
+        # print(self.previous_nodes)
+        # print(self.graph)
 
     def reconstruct_path(self):
-        curr = len(self.graph.keys())-1
+        # self.end
+        # curr = max(self.previous_nodes.keys()) - 1
+        curr = self.end
         path = [curr]
         prev = None
         while prev != 0:
             prev = self.previous_nodes[curr]
             path.append(prev)
             curr = prev
+        self.route = path
         print(path)

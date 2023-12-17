@@ -5,49 +5,32 @@ from configuration_space import ConfigurationSpace
 from graph import Graph
 import matplotlib.pyplot as plt
 import numpy as np
+from utils import *
 
-p = Polygon(([0, 0], [2, 2], [0, 4], [4, 2]))
-# # p = Polygon([[0, 0], [1, 1], [1, 0]])
-l = LineString([[0, 1], [0, 2]])
-po = Point([0, 4]).distance(l.centroid)
-# arr = [[0., 0.],
-#     [2., 2.],
-#     [0., 4.],
-#     [4., 2.],
-#     [0., 0.]]
-#
-#
+def main():
+    min_limit, max_limit = 0, 100
+    cs = ConfigurationSpace(min_limit, max_limit)
+    cs.parse_json("data/maze.json")
+    cs.prepare_lines()
+    cs.divide_space_into_trapezoids()
 
-cs = ConfigurationSpace()
-cs.parse_json("data/my_output.json")
-cs.prepare_lines()
-cs.divide_space_into_trapezoids()
-# print(cs.lines)
-# print(cs.graph_points)
-# print(cs.edges)
-graph = Graph(cs.edges, cs.graph_points, cs.graph_points[0], cs.graph_points[-1])
-graph.construct_graph()
-graph.dijkstra()
-# print(previous_nodes)
-graph.reconstruct_path()
-for l in cs.lines:
-    coords = l.coords.xy
-    plt.plot(coords[0], coords[1])
-for p in cs.obst:
-    coords = np.array(get_coordinates(p)).T
-    # for i in range(len(coords)-1):
-    # print(coords[0], coords[1])
-    plt.plot(coords[0], coords[1])
-    # plt.plot(coords)
+    graph = Graph(cs.edges, cs.graph_points, 0, len(cs.graph_points)-1)
+    graph.construct_graph()
+    graph.dijkstra()
+    graph.reconstruct_path()
 
-for edge in cs.edges:
-    i, j, _ = edge
-    point_i, point_j = cs.graph_points[i], cs.graph_points[j]
-    x = [point_i.x, point_j.x]
-    y = [point_i.y, point_j.y]
-    plt.plot(x, y, linestyle="dashed")
+    plot_obstacles(cs.obst)
+    plot_boundaries(min_limit, max_limit)
+    # plot_vertical_lines(cs.lines)
+    # plot_edges(cs.edges, cs.graph_points)
+    plot_shortest_path(graph.route, cs.graph_points)
+    plot_start_end_points(cs.start_point, cs.end_point)
 
-plt.xlim(-1, 21)
-plt.ylim(-1, 21)
-plt.show()
+    # p = cs.graph_points[37]
+    # plt.scatter(p.x, p.y)
 
+    plt.xlim(min_limit - 5, max_limit + 5)
+    plt.ylim(min_limit - 5, max_limit + 5)
+    plt.show()
+
+main()
