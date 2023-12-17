@@ -2,6 +2,7 @@ from operator import itemgetter
 
 from shapely import Polygon, Point, LineString, MultiLineString, get_coordinates, intersection
 from configuration_space import ConfigurationSpace
+from graph import Graph
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -9,7 +10,6 @@ p = Polygon(([0, 0], [2, 2], [0, 4], [4, 2]))
 # # p = Polygon([[0, 0], [1, 1], [1, 0]])
 l = LineString([[0, 1], [0, 2]])
 po = Point([0, 4]).distance(l.centroid)
-print(Point([0, 4]).distance(l.centroid))
 # arr = [[0., 0.],
 #     [2., 2.],
 #     [0., 4.],
@@ -23,8 +23,13 @@ cs.parse_json("data/my_output.json")
 cs.prepare_lines()
 cs.divide_space_into_trapezoids()
 # print(cs.lines)
-print(cs.graph_points)
+# print(cs.graph_points)
 # print(cs.edges)
+graph = Graph(cs.edges, cs.graph_points, cs.graph_points[0], cs.graph_points[-1])
+graph.construct_graph()
+graph.dijkstra()
+# print(previous_nodes)
+graph.reconstruct_path()
 for l in cs.lines:
     coords = l.coords.xy
     plt.plot(coords[0], coords[1])
@@ -45,3 +50,4 @@ for edge in cs.edges:
 plt.xlim(-1, 21)
 plt.ylim(-1, 21)
 plt.show()
+

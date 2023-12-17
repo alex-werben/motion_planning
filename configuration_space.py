@@ -101,15 +101,11 @@ class ConfigurationSpace:
                     intersection = obst.intersection(vertical)
                     if intersection.geom_type == "MultiLineString":
                         lines = intersection.geoms
-                        print("multiline")
                         for l in lines:
                             y_intersections = l.coords.xy[1]
 
                             for i, y_coord in enumerate(y_intersections):
-                                if y == 6.:
-                                    print(y)
                                 if y_coord == y:
-                                    print(y_coord)
                                     if i == 0:
                                         if y_intersections[1] < y_coord:
                                             closest_bottom_point = y_coord
@@ -196,8 +192,6 @@ class ConfigurationSpace:
                     j += 1
                     continue
                 line = LineString([centroid_i, centroid_j])
-                if centroid_i.x == 13:
-                    print(line)
                 intersects = False
                 for obst in self.__obst:
                     if line.intersects(obst):
@@ -209,7 +203,6 @@ class ConfigurationSpace:
                     # self.__edges.append([j, i, distance])
                     neighbor_x_coord = centroid_j.x
                 j += 1
-                continue
 
     def create_line_with_points(self, points: List[Point]) -> List[Line]:
         """
@@ -238,9 +231,6 @@ class ConfigurationSpace:
         :return:
         """
         self.__lines.append(line)
-
-    def dijkstra(self):
-        
 
     @property
     def graph_points(self):
