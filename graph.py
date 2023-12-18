@@ -21,11 +21,9 @@ class Graph:
             self.graph[j][i] = weight
 
     def dijkstra(self):
-        print("Dijkstra begin")
         shortest_path = {}
         previous_nodes = {}
         unvisited = list(self.graph.keys())
-
         max_value = 10e5
         for k in self.graph.keys():
             shortest_path[k] = max_value
@@ -49,19 +47,13 @@ class Graph:
             unvisited.remove(current_min_node)
         self.previous_nodes = previous_nodes
         self.shortest_path = shortest_path
-        print("Dijkstra end")
-        # print(self.previous_nodes)
-        # print(self.graph)
-
     def reconstruct_path(self):
         # self.end
         # curr = max(self.previous_nodes.keys()) - 1
         curr = self.end
         path = [curr]
         prev = None
-        # print(self.start)
         while prev != self.start:
-            # print(curr)
             prev = self.previous_nodes[curr]
             path.append(prev)
             curr = prev

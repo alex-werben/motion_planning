@@ -48,7 +48,7 @@ class ConfigurationSpace:
             elif prim["type"] == "polygon":
                 obst_points = []
                 for p in prim["points"]:
-                    point = [p['x'], p['y']]
+                    point = Point(p['x'], p['y'])
                     self.__points.append(point)
                     obst_points.append(point)
                 obj = Polygon(obst_points)
@@ -56,12 +56,14 @@ class ConfigurationSpace:
             elif prim["type"] == "startPoint":
                 p = Point(prim['x'], prim['y'])
                 self.start_point = p
+                # self.__points.append(p)
                 self.graph_points.append(p)
             elif prim["type"] == "endPoint":
                 p = Point(prim['x'], prim['y'])
                 self.end_point = p
+                # self.__points.append(p)
                 self.graph_points.append(p)
-        self.__points = sorted(self.__points, key=itemgetter(0))
+        self.__points = sorted(self.__points, key=lambda point: point.x)
 
     def __compare_intersection_points(self,
                                       y,
@@ -85,7 +87,7 @@ class ConfigurationSpace:
             closest_upper_point = self.__y_limit[1]
             closest_bottom_point = self.__y_limit[0]
             change_lower, change_upper = True, True
-            x, y = p
+            x, y = p.x, p.y
             vertical = LineString([[x, self.__y_limit[0]], [x, self.__y_limit[1]]])
 
             for obst in self.obst:
@@ -179,18 +181,51 @@ class ConfigurationSpace:
 
         :return:
         """
-        print("Space division begin")
+        # print("Space division begin")
         for i in tqdm(range(len(self.graph_points))):
             centroid_i = self.graph_points[i]
-            j = i + 1
-            neighbor_x_coord = None
-            while j < len(self.graph_points):
-                centroid_j = self.graph_points[j]
-                if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
-                    break
-                if centroid_i.x == centroid_j.x:
-                    j += 1
+            j = 0
+            # j = i + 1
+            # neighbor_x_coord = None
+            # while j < len(self.graph_points):
+            #     centroid_j = self.graph_points[j]
+            #     if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
+            #         break
+            #     # if centroid_i.x == centroid_j.x:
+            #     #     j += 1
+            #     #     continue
+            #     line = LineString([centroid_i, centroid_j])
+            #     intersects = False
+            #     for obst in self.__obst:
+            #         if line.intersects(obst):
+            #             intersects = True
+            #             break
+            #     if not intersects:
+            #         distance = centroid_i.distance(centroid_j)
+            #         self.__edges.append([i, j, distance])
+            #         # self.__edges.append([j, i, distance])
+            #         neighbor_x_coord = centroid_j.x
+            #     j += 1
+            for j in range(len(self.graph_points)):
+                if j == i:
                     continue
+                centroid_j = self.graph_points[j]
+                # if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
+                #     break
+                # if centroid_i.x == centroid_j.x:
+                #     j += 1
+                #     continue
+                if centroid_i.x == centroid_j.x:
+                    line = LineString([centroid_i, centroid_j])
+                    intersects = False
+                    for obst in self.__obst:
+                        if line.intersects(obst) and not line.touches(obst):
+                            intersects = True
+                            break
+                    if not intersects:
+                        distance = centroid_i.distance(centroid_j)
+                        self.__edges.append([i, j, distance])
+
                 line = LineString([centroid_i, centroid_j])
                 intersects = False
                 for obst in self.__obst:
@@ -202,8 +237,7 @@ class ConfigurationSpace:
                     self.__edges.append([i, j, distance])
                     # self.__edges.append([j, i, distance])
                     neighbor_x_coord = centroid_j.x
-                j += 1
-        print("Space division end")
+        # print("Space division end")
 
     @property
     def graph_points(self):
