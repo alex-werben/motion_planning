@@ -21,6 +21,7 @@ class Graph:
             self.graph[j][i] = weight
 
     def dijkstra(self):
+        print("Dijkstra begin")
         shortest_path = {}
         previous_nodes = {}
         unvisited = list(self.graph.keys())
@@ -48,6 +49,7 @@ class Graph:
             unvisited.remove(current_min_node)
         self.previous_nodes = previous_nodes
         self.shortest_path = shortest_path
+        print("Dijkstra end")
         # print(self.previous_nodes)
         # print(self.graph)
 

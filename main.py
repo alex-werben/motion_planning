@@ -10,7 +10,7 @@ from utils import *
 def main():
     min_limit, max_limit = 0, 100
     cs = ConfigurationSpace(min_limit, max_limit)
-    cs.parse_json("data/example.json")
+    cs.parse_json("data/8.json")
     cs.prepare_lines()
     cs.divide_space_into_trapezoids()
     # print(cs.edges)
