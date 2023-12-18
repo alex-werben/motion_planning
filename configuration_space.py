@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 
 class ConfigurationSpace:
     def __init__(self, min_limit, max_limit):
+        self.end_point_index = None
+        self.start_point_index = None
         self.end_point = None
         self.start_point = None
         self.__obst = []
@@ -58,6 +60,7 @@ class ConfigurationSpace:
             elif prim["type"] == "endPoint":
                 p = Point(prim['x'], prim['y'])
                 self.end_point = p
+                self.graph_points.append(p)
         self.__points = sorted(self.__points, key=itemgetter(0))
 
     def __compare_intersection_points(self,
@@ -161,7 +164,12 @@ class ConfigurationSpace:
                 self.__lines.append(l)
         for l in self.__lines:
             self.__graph_points.append(l.centroid)
-        self.__graph_points.append(self.end_point)
+        self.__graph_points = sorted(self.__graph_points, key=lambda point: point.x)
+        for i, point in enumerate(self.__graph_points):
+            if point == self.start_point:
+                self.start_point_index = i
+            if point == self.end_point:
+                self.end_point_index = i
 
     def divide_space_into_trapezoids(self) -> None:
         """
@@ -171,7 +179,8 @@ class ConfigurationSpace:
 
         :return:
         """
-        for i in range(len(self.graph_points)):
+        print("Space division begin")
+        for i in tqdm(range(len(self.graph_points))):
             centroid_i = self.graph_points[i]
             j = i + 1
             neighbor_x_coord = None
@@ -194,34 +203,7 @@ class ConfigurationSpace:
                     # self.__edges.append([j, i, distance])
                     neighbor_x_coord = centroid_j.x
                 j += 1
-
-    def create_line_with_points(self, points: List[Point]) -> List[Line]:
-        """
-        Method creates 1+ Line and returns it.
-
-        :param points:
-        :return:
-        """
-
-    def create_trapezoid_with_points(self,
-                                     left: List[Line],
-                                     right: List[Line]) -> Trapezoid:
-        """
-        Method creates Trapezoid with given lines.
-
-        :param left:
-        :param right:
-        :return:
-        """
-
-    def add_line_to_list(self, line: Line) -> None:
-        """
-        Method adds line to list of lines.
-
-        :param line:
-        :return:
-        """
-        self.__lines.append(line)
+        print("Space division end")
 
     @property
     def graph_points(self):

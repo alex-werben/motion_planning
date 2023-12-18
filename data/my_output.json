@@ -8,8 +8,8 @@
     },
     {
         "type":"startPoint",
-        "x":1.0,
-        "y":1.0
+        "x":10.0,
+        "y":0.5
     },
     {
         "type":"endPoint",

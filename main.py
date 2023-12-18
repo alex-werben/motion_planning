@@ -10,11 +10,14 @@ from utils import *
 def main():
     min_limit, max_limit = 0, 100
     cs = ConfigurationSpace(min_limit, max_limit)
-    cs.parse_json("data/maze.json")
+    cs.parse_json("data/example.json")
     cs.prepare_lines()
     cs.divide_space_into_trapezoids()
+    # print(cs.edges)
+    # print(cs.start_point_index, cs.end_point_index)
 
-    graph = Graph(cs.edges, cs.graph_points, 0, len(cs.graph_points)-1)
+
+    graph = Graph(cs.edges, cs.graph_points, cs.start_point_index, cs.end_point_index)
     graph.construct_graph()
     graph.dijkstra()
     graph.reconstruct_path()

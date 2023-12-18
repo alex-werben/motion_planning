@@ -35,7 +35,7 @@ def plot_shortest_path(path, graph_points):
     for i in range(len(path) - 1):
         p1, p2 = graph_points[path[i]], graph_points[path[i+1]]
         x, y = [p1.x, p2.x], [p1.y, p2.y]
-        plt.plot(x, y, linestyle="dashed")
+        plt.plot(x, y, linestyle="dashed", color='r')
 
 
 def plot_start_end_points(start, end):

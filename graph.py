@@ -29,7 +29,7 @@ class Graph:
         for k in self.graph.keys():
             shortest_path[k] = max_value
 
-        shortest_path[0] = 0
+        shortest_path[self.start] = 0
 
         while unvisited:
             current_min_node = None
@@ -57,9 +57,10 @@ class Graph:
         curr = self.end
         path = [curr]
         prev = None
-        while prev != 0:
+        # print(self.start)
+        while prev != self.start:
+            # print(curr)
             prev = self.previous_nodes[curr]
             path.append(prev)
             curr = prev
         self.route = path
-        print(path)
