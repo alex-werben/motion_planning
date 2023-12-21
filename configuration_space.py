@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 class ConfigurationSpace:
     def __init__(self, min_limit, max_limit):
+        self.__trapezoids = []
         self.end_point_index = None
         self.start_point_index = None
         self.end_point = None
@@ -132,7 +133,6 @@ class ConfigurationSpace:
                                     else:
                                         closest_upper_point = y_coord
 
-
                             (closest_bottom_point,
                              closest_upper_point) = self.__compare_intersection_points(y,
                                                                                        closest_bottom_point,
@@ -173,7 +173,7 @@ class ConfigurationSpace:
             if point == self.end_point:
                 self.end_point_index = i
 
-    def divide_space_into_trapezoids(self) -> None:
+    def divide_space_into_verticals(self) -> None:
         """
         Method divides configuration space into trapezoids with
         given self.__configuration_points. Result will be saved in
@@ -185,59 +185,36 @@ class ConfigurationSpace:
         # print("Space division begin")
         for i in tqdm(range(len(self.graph_points))):
             centroid_i = self.graph_points[i]
-            j = 0
-            # j = i + 1
-            # neighbor_x_coord = None
-            # while j < len(self.graph_points):
-            #     centroid_j = self.graph_points[j]
-            #     if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
-            #         break
-            #     # if centroid_i.x == centroid_j.x:
-            #     #     j += 1
-            #     #     continue
-            #     line = LineString([centroid_i, centroid_j])
-            #     intersects = False
-            #     for obst in self.__obst:
-            #         if line.intersects(obst):
-            #             intersects = True
-            #             break
-            #     if not intersects:
-            #         distance = centroid_i.distance(centroid_j)
-            #         self.__edges.append([i, j, distance])
-            #         # self.__edges.append([j, i, distance])
-            #         neighbor_x_coord = centroid_j.x
-            #     j += 1
-            for j in range(len(self.graph_points)):
+            neighbor_x_coord = None
+            for j in range(i + 1, len(self.graph_points)):
                 if j == i:
                     continue
                 centroid_j = self.graph_points[j]
-                # if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
-                #     break
-                # if centroid_i.x == centroid_j.x:
-                #     j += 1
-                #     continue
-                if centroid_i.x == centroid_j.x:
-                    line = LineString([centroid_i, centroid_j])
-                    intersects = False
-                    for obst in self.__obst:
-                        if line.intersects(obst) and not line.touches(obst):
-                            intersects = True
-                            break
-                    if not intersects:
-                        distance = centroid_i.distance(centroid_j)
-                        self.__edges.append([i, j, distance])
+
+                if neighbor_x_coord and centroid_j.x > neighbor_x_coord:
+                    break
 
                 line = LineString([centroid_i, centroid_j])
                 intersects = False
+
                 for obst in self.__obst:
                     if line.intersects(obst):
-                        intersects = True
-                        break
+                        if (centroid_i.x == centroid_j.x and not line.touches(obst)) or (centroid_i.x != centroid_j.x):
+                            intersects = True
+                            break
                 if not intersects:
+                    if centroid_i.x != centroid_j.x:
+                        neighbor_x_coord = centroid_j.x
                     distance = centroid_i.distance(centroid_j)
                     self.__edges.append([i, j, distance])
-                    # self.__edges.append([j, i, distance])
+
         # print("Space division end")
+
+    def divide_space_into_trapezoids(self):
+        self.__trapezoids = []
+        for edge in self.__edges:
+            i, j, _ = edge
+
 
     @property
     def graph_points(self):
