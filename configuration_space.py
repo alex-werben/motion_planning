@@ -178,6 +178,7 @@ class ConfigurationSpace:
         Method divides configuration space into trapezoids with
         given self.__configuration_points. Result will be saved in
         self.__lines and self.trapezoids.
+        Есть набор линий, набор их центров, нужно построить набор трапецоидов
 
         :return:
         """
@@ -236,7 +237,6 @@ class ConfigurationSpace:
                     distance = centroid_i.distance(centroid_j)
                     self.__edges.append([i, j, distance])
                     # self.__edges.append([j, i, distance])
-                    neighbor_x_coord = centroid_j.x
         # print("Space division end")
 
     @property

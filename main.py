@@ -43,7 +43,7 @@ def measure_time():
 def main():
     min_limit, max_limit = 0, 100
     cs = ConfigurationSpace(min_limit, max_limit)
-    cs.parse_json("data/my_circle.json")
+    cs.parse_json("data/1.json")
     cs.prepare_lines()
     cs.divide_space_into_trapezoids()
 
