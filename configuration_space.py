@@ -10,6 +10,8 @@ from shapely import Polygon, Point, LineString, get_coordinates, GeometryCollect
 import matplotlib.pyplot as plt
 
 
+# Если в полигоне есть вертикальная линия, то сразу добавить ее в self.lines
+
 class ConfigurationSpace:
     def __init__(self, min_limit, max_limit):
         self.__trapezoids = []
@@ -22,8 +24,10 @@ class ConfigurationSpace:
         self.__y_limit = [min_limit, max_limit]
         self.__lines = []
         self.__points = []
+        self.points_detailed = {}
         self.__edges = []
         self.__graph_points = []
+        self.graph = {}
 
     def parse_json(self, path: str) -> None:
         """
@@ -35,17 +39,11 @@ class ConfigurationSpace:
         with open(path, 'r') as fp:
             array: List[dict] = json.load(fp)
             fp.close()
+        i = 0
         for prim in array:
             if prim["type"] == "point":
                 obj = Point(prim['x'], prim['y'])
-                # obj = Polypoint(Point(prim['x'], prim['y']), prim["size"])
                 self.__points.append(obj)
-            # elif prim["type"] == "polyline":
-            #     points: List[Point] = []
-            #     for p in prim["points"]:
-            #         points.append(Point(p['x'], p['y']))
-            #     obj = LineString(points)
-            #     self.__obst.append(obj)
             elif prim["type"] == "polygon":
                 obst_points = []
                 for p in prim["points"]:
@@ -84,7 +82,7 @@ class ConfigurationSpace:
 
         :return:
         """
-        for p in self.points:
+        for index, p in enumerate(self.points):
             closest_upper_point = self.__y_limit[1]
             closest_bottom_point = self.__y_limit[0]
             change_lower, change_upper = True, True
@@ -156,14 +154,17 @@ class ConfigurationSpace:
                                                                                        y_coord)
             new_lines = []
             if closest_upper_point == y:
-                new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
+                lower = LineString([[x, closest_bottom_point], [x, y]])
+                new_lines.append(lower)
             elif closest_bottom_point == y:
-                new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
+                upper = LineString([[x, y], [x, closest_upper_point]])
+                new_lines.append(upper)
             else:
                 new_lines.append(LineString([[x, closest_bottom_point], [x, y]]))
                 new_lines.append(LineString([[x, y], [x, closest_upper_point]]))
             for l in new_lines:
                 self.__lines.append(l)
+            # self.points_and_their_verticals[index]["lower"]
         for l in self.__lines:
             self.__graph_points.append(l.centroid)
         self.__graph_points = sorted(self.__graph_points, key=lambda point: point.x)
@@ -180,7 +181,6 @@ class ConfigurationSpace:
         self.__lines and self.trapezoids.
         Есть набор линий, набор их центров, нужно построить набор трапецоидов
 
-        :return:
         """
         # print("Space division begin")
         for i in tqdm(range(len(self.graph_points))):
@@ -212,8 +212,9 @@ class ConfigurationSpace:
 
     def divide_space_into_trapezoids(self):
         self.__trapezoids = []
-        for edge in self.__edges:
-            i, j, _ = edge
+        for i, point in enumerate(self.points):
+
+
 
 
     @property
