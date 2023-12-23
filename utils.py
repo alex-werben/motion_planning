@@ -5,11 +5,15 @@ from shapely import Polygon, Point, LineString, get_coordinates, GeometryCollect
 
 
 def plot_obstacles(obstacles):
-    # print(obstacles)
     for obst in obstacles:
         coords = np.array(get_coordinates(obst)).T
         plt.fill(coords[0], coords[1], 'b')
-        # plt.show()
+
+def plot_trapezoids(trapezoids):
+    for tr in trapezoids:
+        coords = np.array(get_coordinates(tr)).T
+        plt.fill(coords[0], coords[1], 'orange')
+        plt.scatter(tr.centroid.x, tr.centroid.y, color="red")
 
 
 def plot_boundaries(min_limit, max_limit):
@@ -21,7 +25,7 @@ def plot_boundaries(min_limit, max_limit):
 def plot_vertical_lines(lines):
     for l in lines:
         coords = l.coords.xy
-        plt.plot(coords[0], coords[1])
+        plt.plot(coords[0], coords[1], color="red")
 
 
 def plot_edges(edges, graph_points):

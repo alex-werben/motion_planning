@@ -11,22 +11,25 @@ from utils import *
 def main():
     min_limit, max_limit = 0, 100
     cs = ConfigurationSpace(min_limit, max_limit)
-    cs.parse_json("data/test/10.json")
+    cs.parse_json("data/my_output.json")
     cs.prepare_lines()
+    cs.divide_space_into_trapezoids()
+    print(cs.trapezoids)
     cs.divide_space_into_verticals()
-    # print(cs.graph_points)
+    # print(cs.centroids)
     # print(cs.edges)
 
-    graph = Graph(cs.edges, cs.graph_points, cs.start_point_index, cs.end_point_index)
-    graph.construct_graph()
-    graph.dijkstra()
-    graph.reconstruct_path()
+    # graph = Graph(cs.edges, cs.centroids, cs.start_point_index, cs.end_point_index)
+    # graph.construct_graph()
+    # graph.dijkstra()
+    # graph.reconstruct_path()
 
     plot_obstacles(cs.obst)
     plot_boundaries(min_limit, max_limit)
-    # plot_vertical_lines(cs.lines)
-    # plot_edges(cs.edges, cs.graph_points)
-    plot_shortest_path(graph.route, cs.graph_points)
+    plot_trapezoids(cs.trapezoids)
+    plot_vertical_lines(cs.lines)
+    # plot_edges(cs.edges, cs.centroids)
+    # plot_shortest_path(graph.route, cs.centroids)
     plot_start_end_points(cs.start_point, cs.end_point)
 
     plot_show(min_limit, max_limit)
@@ -45,7 +48,7 @@ def measure_time():
         cs.divide_space_into_verticals()
 
 
-        graph = Graph(cs.edges, cs.graph_points, cs.start_point_index, cs.end_point_index)
+        graph = Graph(cs.edges, cs.centroids, cs.start_point_index, cs.end_point_index)
         graph.construct_graph()
         graph.dijkstra()
         graph.reconstruct_path()
