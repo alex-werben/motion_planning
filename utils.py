@@ -7,12 +7,13 @@ from shapely import Polygon, Point, LineString, get_coordinates, GeometryCollect
 def plot_obstacles(obstacles):
     for obst in obstacles:
         coords = np.array(get_coordinates(obst)).T
-        plt.fill(coords[0], coords[1], 'b')
+        plt.fill(coords[0], coords[1], 'b', alpha=0.5)
 
 def plot_trapezoids(trapezoids):
     for tr in trapezoids:
+        tr = tr["trapezoid"]
         coords = np.array(get_coordinates(tr)).T
-        plt.fill(coords[0], coords[1], 'orange')
+        plt.fill(coords[0], coords[1], 'orange', alpha=0.5)
         plt.scatter(tr.centroid.x, tr.centroid.y, color="red")
 
 

@@ -1,0 +1,79 @@
+[
+    {
+        "countVertex": 3,
+        "density": 0,
+        "seed": 3892905764,
+        "size": 3,
+        "type": "info"
+    },
+    {
+        "type":"startPoint",
+        "x":2.0,
+        "y":2.0
+    },
+    {
+        "type":"endPoint",
+        "x":98.0,
+        "y":98.0
+    },
+    {
+        "points": [
+            {
+                "type": "point",
+                "x": 10,
+                "y": 15
+            },
+            {
+                "type": "point",
+                "x": 25,
+                "y": 30
+            },
+            {
+                "type": "point",
+                "x": 45,
+                "y": 5
+            }
+        ],
+        "type": "polygon"
+    },
+    {
+        "points": [
+            {
+                "type": "point",
+                "x": 22.5,
+                "y": 20
+            },
+            {
+                "type": "point",
+                "x": 35,
+                "y": 70
+            },
+            {
+                "type": "point",
+                "x": 65,
+                "y": 57.5
+            }
+        ],
+        "type": "polygon"
+    },
+    {
+        "points": [
+            {
+                "type": "point",
+                "x": 85,
+                "y": 40
+            },
+            {
+                "type": "point",
+                "x": 55,
+                "y": 40
+            },
+            {
+                "type": "point",
+                "x": 75,
+                "y": 10
+            }
+        ],
+        "type": "polygon"
+    }
+]
